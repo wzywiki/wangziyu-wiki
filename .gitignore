@@ -1,0 +1,32 @@
+# 依赖
+node_modules/
+dist/
+.pnp
+.pnp.js
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 日志
+*.log
+npm-debug.log*
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# 数据文件（大文件，不上传）
+wangziyu-api/data/lyrics/
