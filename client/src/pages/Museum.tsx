@@ -85,10 +85,30 @@ export default function MuseumPage() {
   const [yearFilter, setYearFilter] = useState<string[]>(saved.filter.year);
   const [activityFilter, setActivityFilter] = useState<string[]>(saved.filter.activity ?? []);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef(saved.page);
   const finishedRef = useRef(saved.finished);
   const loadingRef = useRef(false);
   const isRestoredRef = useRef(museumStore.hasData());
+  const [cols, setCols] = useState(2);
+  const colsRef = useRef(2);
+
+  // 计算列数：每列350px+20px间距=370px，与yinlin.wiki一致
+  const calcCols = useCallback(() => {
+    if (gridRef.current) {
+      const w = gridRef.current.offsetWidth;
+      const c = Math.max(2, Math.floor(w / 370));
+      colsRef.current = c;
+      setCols(c);
+    }
+  }, []);
+
+  useEffect(() => {
+    calcCols();
+    const ro = new ResizeObserver(() => calcCols());
+    if (gridRef.current) ro.observe(gridRef.current);
+    return () => ro.disconnect();
+  }, [calcCols]);
 
   // 恢复滚动位置
   useEffect(() => {
@@ -202,7 +222,6 @@ export default function MuseumPage() {
       
       <div
         style={{
-          maxWidth: 1100,
           margin: "0 auto",
           padding: isMobile ? "12px 10px 80px" : "62px 16px 40px",
           display: "flex",
@@ -298,46 +317,34 @@ export default function MuseumPage() {
             </div>
           ) : (
             <div
+              ref={gridRef}
               style={{
-                display: "grid",
-                gridTemplateColumns: isMobile
-                  ? "repeat(2, 1fr)"
-                  : "repeat(auto-fill, minmax(180px, 1fr))",
-                gap: isMobile ? 8 : 12,
+                columnCount: isMobile ? 2 : cols,
+                columnGap: 20,
+                width: "100%",
               }}
             >
               {items.map((m) => (
                 <Link key={m.id} href={`/museumDetail?id=${m.id}`}>
                   <div
                     style={{
-                      background: "rgba(255,255,255,0.9)",
-                      border: "1px solid rgba(160,200,225,0.45)",
-                      borderRadius: 8,
-                      overflow: "hidden",
+                      breakInside: "avoid",
+                      marginBottom: 20,
                       cursor: "pointer",
-                      transition: "box-shadow 0.2s, transform 0.2s",
-                      boxShadow: "0 1px 6px rgba(100,160,200,0.1)",
+                      transition: "opacity 0.2s",
                     }}
                     onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLDivElement).style.boxShadow =
-                        "0 4px 18px rgba(80,140,200,0.22)";
-                      (e.currentTarget as HTMLDivElement).style.transform =
-                        "translateY(-2px)";
+                      (e.currentTarget as HTMLDivElement).style.opacity = "0.85";
                     }}
                     onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLDivElement).style.boxShadow =
-                        "0 1px 6px rgba(100,160,200,0.1)";
-                      (e.currentTarget as HTMLDivElement).style.transform =
-                        "translateY(0)";
+                      (e.currentTarget as HTMLDivElement).style.opacity = "1";
                     }}
                   >
-                    {/* 封面图 */}
+                    {/* 封面图：原始比例，大圆角，参考yinlin.wiki */}
                     <div
                       style={{
                         width: "100%",
-                        paddingTop: "75%",
-                        position: "relative",
-                        background: "rgba(220,235,248,0.4)",
+                        borderRadius: "1rem",
                         overflow: "hidden",
                       }}
                     >
@@ -346,21 +353,10 @@ export default function MuseumPage() {
                           src={m.cover_url}
                           alt={m.name}
                           style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
                             width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                            transition: "transform 0.3s",
-                          }}
-                          onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLImageElement).style.transform =
-                              "scale(1.05)";
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLImageElement).style.transform =
-                              "scale(1)";
+                            height: "auto",
+                            display: "block",
+                            borderRadius: "1rem",
                           }}
                           onError={(e) => {
                             (e.currentTarget as HTMLImageElement).style.display =
@@ -370,11 +366,10 @@ export default function MuseumPage() {
                       ) : (
                         <div
                           style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
                             width: "100%",
-                            height: "100%",
+                            aspectRatio: "4/3",
+                            borderRadius: "1rem",
+                            background: "rgba(180,215,235,0.3)",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -385,74 +380,24 @@ export default function MuseumPage() {
                           🎁
                         </div>
                       )}
-                      {/* 图片数量角标 */}
-                      {m.item_count > 0 && (
-                        <div
-                          style={{
-                            position: "absolute",
-                            bottom: 4,
-                            right: 4,
-                            background: "rgba(0,0,0,0.55)",
-                            color: "#fff",
-                            fontSize: "0.65rem",
-                            padding: "1px 5px",
-                            borderRadius: 3,
-                          }}
-                        >
-                          {m.item_count}张
-                        </div>
-                      )}
                     </div>
-                    {/* 卡片信息 */}
-                    <div style={{ padding: isMobile ? "6px 8px 8px" : "8px 10px 10px" }}>
+                    {/* 卡片信息：参考yinlin.wiki极简风格 */}
+                    <div style={{ padding: "6px 4px 0" }}>
                       <div
                         style={{
-                          fontSize: isMobile ? "0.75rem" : "0.82rem",
-                          fontWeight: 600,
-                          color: "rgb(40,70,110)",
+                          fontSize: "1rem",
+                          fontWeight: 700,
+                          color: "rgb(104,96,123)",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
                           whiteSpace: "nowrap",
-                          marginBottom: 3,
+                          marginBottom: 2,
                         }}
                       >
                         {m.name}
                       </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: "0.65rem",
-                            padding: "1px 5px",
-                            borderRadius: 3,
-                            background: "rgba(140,190,220,0.25)",
-                            color: "rgb(60,100,150)",
-                            border: "1px solid rgba(120,170,210,0.35)",
-                            flexShrink: 0,
-                          }}
-                        >
-                          {m.year}年
-                        </span>
-                        {m.item_types && m.item_types.length > 0 && !isMobile && (
-                          <span
-                            style={{
-                              fontSize: "0.62rem",
-                              color: "rgb(110,140,170)",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            }}
-                          >
-                            {m.item_types.slice(0, 2).join("·")}
-                            {m.item_types.length > 2 ? "…" : ""}
-                          </span>
-                        )}
+                      <div style={{ fontSize: "0.85rem", color: "rgb(104,96,123)" }}>
+                        {m.year}年 · {m.item_types?.[0] ?? ""}
                       </div>
                     </div>
                   </div>

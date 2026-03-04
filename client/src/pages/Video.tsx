@@ -124,33 +124,27 @@ function CoverImage({ src, alt }: { src: string | null; alt: string }) {
   );
 }
 
-/** 单个视频卡片，支持渐入动画 */
+/** 单个视频卡片，参考yinlin.wiki极简风格 */
 function VideoCard({ v, visible }: { v: Video; visible: boolean }) {
   return (
     <Link href={`/videoDetail?id=${v.id}`}>
       <div
         style={{
-          background: "rgba(255,255,255,0.78)",
-          border: "1px solid rgba(160,200,225,0.45)",
-          borderRadius: 8,
-          overflow: "hidden",
+          breakInside: "avoid",
+          marginBottom: 20,
           cursor: "pointer",
-          transition: "all 0.2s ease, opacity 0.35s ease, transform 0.35s ease",
+          transition: "opacity 0.35s ease, transform 0.35s ease",
           opacity: visible ? 1 : 0,
           transform: visible ? "translateY(0)" : "translateY(12px)",
         }}
         onMouseEnter={(e) => {
-          const el = e.currentTarget as HTMLDivElement;
-          el.style.boxShadow = "0 4px 18px rgba(100,160,200,0.28)";
-          el.style.transform = "translateY(-2px)";
+          (e.currentTarget as HTMLDivElement).style.opacity = "0.85";
         }}
         onMouseLeave={(e) => {
-          const el = e.currentTarget as HTMLDivElement;
-          el.style.boxShadow = "none";
-          el.style.transform = "translateY(0)";
+          (e.currentTarget as HTMLDivElement).style.opacity = "1";
         }}
       >
-        <div style={{ position: "relative" }}>
+        <div style={{ position: "relative", borderRadius: "1rem", overflow: "hidden" }}>
           <CoverImage src={v.cover_url} alt={v.name} />
 
           {v.duration && (
@@ -184,26 +178,26 @@ function VideoCard({ v, visible }: { v: Video; visible: boolean }) {
             {v.type}
           </div>
         </div>
-        <div style={{ padding: "8px 10px 10px" }}>
+        <div style={{ padding: "6px 4px 0" }}>
           <div
             style={{
-              fontSize: "0.8rem",
-              color: "rgb(40,70,110)",
+              fontSize: "1rem",
+              color: "rgb(104,96,123)",
               lineHeight: 1.45,
               marginBottom: 4,
               display: "-webkit-box",
               WebkitLineClamp: 2,
               WebkitBoxOrient: "vertical",
               overflow: "hidden",
-              fontWeight: 500,
+              fontWeight: 700,
             }}
           >
             {v.name}
           </div>
           <div
             style={{
-              fontSize: "0.7rem",
-              color: "rgb(110,140,170)",
+              fontSize: "0.85rem",
+              color: "rgb(104,96,123)",
             }}
           >
             {formatDate(v.publish_time)}
@@ -239,18 +233,20 @@ export default function VideoPage() {
   const finishedRef = useRef(saved.finished);
   const loadingRef = useRef(false);
   const isRestoredRef = useRef(videoStore.hasData());
-  // 首屏列数（根据容器宽度动态计算）
-  const colsRef = useRef(5);
+  // 列数 state（触发重渲染）和 ref（首屏加载用）
+  const [cols, setCols] = useState(2);
+  const colsRef = useRef(2);
 
-  // 计算当前网格列数
+  // 计算当前网格列数：每列350px+20px间距=370px，与yinlin.wiki一致
   const calcCols = useCallback(() => {
     if (gridRef.current) {
       const w = gridRef.current.offsetWidth;
-      const cols = Math.max(1, Math.floor(w / 200));
-      colsRef.current = cols;
-      return cols;
+      const c = Math.max(2, Math.floor(w / 370));
+      colsRef.current = c;
+      setCols(c);
+      return c;
     }
-    return 5;
+    return 2;
   }, []);
 
   // 监听容器宽度变化，更新列数
@@ -414,7 +410,6 @@ export default function VideoPage() {
     <div style={{ minHeight: "100vh" }}>
       <div
         style={{
-          maxWidth: 1600,
           margin: "0 auto",
           padding: "62px 16px 40px",
           display: "flex",
@@ -516,9 +511,9 @@ export default function VideoPage() {
             <div
               ref={gridRef}
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                gap: 10,
+                columnCount: cols,
+                columnGap: 20,
+                width: "100%",
               }}
             >
               {items.map((v) => (

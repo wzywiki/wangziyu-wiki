@@ -185,11 +185,12 @@ export default function PicPage() {
   const loadingRef = useRef(false);
   const isRestoredRef = useRef(picStore.hasData());
 
-  // 根据容器宽度动态计算列数（每列约220px），容器越宽列数越多
+  // 根据容器宽度动态计算列数：每列350px+20px间距=370px，与yinlin.wiki一致
+  // 100%缩放下约2列，缩小时容器变宽列数自动增加
   const calcCols = useCallback(() => {
     if (gridRef.current) {
       const w = gridRef.current.offsetWidth;
-      const c = Math.max(2, Math.floor(w / 220));
+      const c = Math.max(2, Math.floor(w / 370));
       setCols(c);
     }
   }, []);
