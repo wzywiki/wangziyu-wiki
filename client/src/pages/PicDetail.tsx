@@ -133,7 +133,7 @@ export default function PicDetail() {
                 }}
               >
                 <img
-                  src={url + '&thumbnail=1'}
+                  src={url}
                   alt={`${pic.name} ${i + 1}`}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   onError={e => {
@@ -286,7 +286,7 @@ export default function PicDetail() {
                   }}
                 >
                   <img
-                    src={url + '&thumbnail=1'}
+                    src={url}
                     alt={`${pic.name} ${i + 1}`}
                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                     onError={e => {
