@@ -90,8 +90,10 @@ export default function MuseumPage() {
   const finishedRef = useRef(saved.finished);
   const loadingRef = useRef(false);
   const isRestoredRef = useRef(museumStore.hasData());
-  const [cols, setCols] = useState(2);
-  const colsRef = useRef(2);
+  // 初始列数：用 window.innerWidth 提前估算（减去左侧面板220px + gap14px），避免初始渲染闪变2列
+  const estimateCols = () => Math.max(2, Math.floor((window.innerWidth - 234 - 32) / 310));
+  const [cols, setCols] = useState(estimateCols);
+  const colsRef = useRef(estimateCols());
 
   // 计算列数：每列350px+20px间距=370px，与yinlin.wiki一致
   const calcCols = useCallback(() => {

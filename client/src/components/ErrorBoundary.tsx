@@ -9,16 +9,59 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+  errorLocation: string;
 }
 
+/**
+ * ErrorBoundary — 全局错误边界
+ * 修复：监听 URL 变化，路由切换时自动清除错误状态，
+ * 避免某个页面出错后整个应用卡死，只能刷新才能恢复。
+ */
 class ErrorBoundary extends Component<Props, State> {
+  private unlisten: (() => void) | null = null;
+
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, errorLocation: "" };
   }
 
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+  static getDerivedStateFromError(error: Error): Partial<State> {
+    return { hasError: true, error, errorLocation: window.location.pathname };
+  }
+
+  componentDidMount() {
+    // 监听 popstate（浏览器前进/后退）
+    const handlePop = () => this.resetOnRouteChange();
+    window.addEventListener("popstate", handlePop);
+
+    // 拦截 history.pushState / replaceState（wouter 路由跳转）
+    const origPush = history.pushState.bind(history);
+    const origReplace = history.replaceState.bind(history);
+    history.pushState = (...args) => {
+      origPush(...args);
+      this.resetOnRouteChange();
+    };
+    history.replaceState = (...args) => {
+      origReplace(...args);
+      this.resetOnRouteChange();
+    };
+
+    this.unlisten = () => {
+      window.removeEventListener("popstate", handlePop);
+      history.pushState = origPush;
+      history.replaceState = origReplace;
+    };
+  }
+
+  componentWillUnmount() {
+    this.unlisten?.();
+  }
+
+  resetOnRouteChange() {
+    // 只有当前路径与出错时的路径不同时才重置，避免同页面重复触发
+    if (this.state.hasError && window.location.pathname !== this.state.errorLocation) {
+      this.setState({ hasError: false, error: null, errorLocation: "" });
+    }
   }
 
   render() {

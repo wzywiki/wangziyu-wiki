@@ -28,38 +28,39 @@ function FilterGroup({
   onToggle: (v: string) => void;
 }) {
   return (
-    <div style={{ marginBottom: 18 }}>
+    <div style={{ marginBottom: 12 }}>
       <div
         style={{
-          fontSize: "0.78rem",
-          color: "rgb(104,96,123)",
-          marginBottom: 8,
-          fontWeight: 700,
-          letterSpacing: "0.06em",
-          textTransform: "uppercase" as const,
+          fontSize: "0.72rem",
+          color: "rgb(80,120,170)",
+          marginBottom: 5,
+          fontWeight: 600,
+          letterSpacing: "0.04em",
         }}
       >
         {label}
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         {items.map((item) => (
           <button
             key={item}
             onClick={() => onToggle(item)}
             style={{
-              padding: "4px 12px",
-              borderRadius: 20,
-              fontSize: "0.82rem",
+              padding: "2px 8px",
+              borderRadius: 3,
+              fontSize: "0.72rem",
               cursor: "pointer",
-              border: "none",
+              border: selected.includes(item)
+                ? "1px solid rgba(80,150,200,0.6)"
+                : "1px solid rgba(160,200,225,0.4)",
               background: selected.includes(item)
-                ? "rgb(104,96,123)"
-                : "rgba(104,96,123,0.1)",
+                ? "rgba(100,170,210,0.28)"
+                : "rgba(255,255,255,0.5)",
               color: selected.includes(item)
-                ? "#fff"
-                : "rgb(104,96,123)",
+                ? "rgb(30,70,130)"
+                : "rgb(70,110,160)",
               fontWeight: selected.includes(item) ? 700 : 400,
-              transition: "all 0.18s",
+              transition: "all 0.15s",
             }}
           >
             {item}
@@ -76,36 +77,33 @@ function PicCard({ pic: p }: { pic: PicSet }) {
       <div
         style={{
           cursor: "pointer",
-          // 防止卡片被分列截断
-          breakInside: "avoid",
-          pageBreakInside: "avoid",
-          WebkitColumnBreakInside: "avoid",
-          marginBottom: 20,
         }}
       >
-        {/* 图片：大圆角，宽度100%自适应，参考yinlin.wiki的 border-radius:1rem */}
-        <img
-          src={p.cover_url}
-          alt={p.name}
-          style={{
-            width: "100%",
-            height: "auto",
-            display: "block",
-            borderRadius: "1rem",
-            objectFit: "contain",
-            transition: "opacity 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLImageElement).style.opacity = "0.88";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLImageElement).style.opacity = "1";
-          }}
-          onError={(e) => {
-            const el = e.currentTarget as HTMLImageElement;
-            el.style.display = "none";
-          }}
-        />
+        {/* 图片容器：用 aspect-ratio 占位，防止图片未加载时高度为0造成列高度不均 */}
+        <div style={{ width: "100%", borderRadius: "1rem", overflow: "hidden", background: "rgba(180,210,230,0.2)" }}>
+          <img
+            src={p.cover_url}
+            alt={p.name}
+            style={{
+              width: "100%",
+              height: "auto",
+              display: "block",
+              borderRadius: "1rem",
+              objectFit: "contain",
+              transition: "opacity 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLImageElement).style.opacity = "0.88";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLImageElement).style.opacity = "1";
+            }}
+            onError={(e) => {
+              const el = e.currentTarget as HTMLImageElement;
+              el.style.display = "none";
+            }}
+          />
+        </div>
         {/* 卡片底部文案：参考yinlin.wiki padding:0.5rem 1rem，颜色rgb(104,96,123) */}
         <div style={{ padding: "0.5rem 0.5rem 0" }}>
           <div
@@ -142,21 +140,21 @@ function PicCard({ pic: p }: { pic: PicSet }) {
 }
 
 /**
- * 瀑布流容器：使用 CSS columns 多列布局
- * 优点：纯CSS实现，无需JS计算，列宽绝对均等，响应式自动适配
- * 通过 column-count 控制列数，column-gap 控制间距
+ * 瀑布流容器：行优先顺序 + 无空隙
+ * - 按 i % cols 将卡片分配到各列，实现从左到右的填充顺序
+ * - 每列用 flex-direction:column 堆叠，卡片紧密无空隙
  */
 function MasonryGrid({ items, cols }: { items: PicSet[]; cols: number }) {
+  const columns: PicSet[][] = Array.from({ length: cols }, () => []);
+  items.forEach((item, i) => {
+    columns[i % cols].push(item);
+  });
   return (
-    <div
-      style={{
-        columnCount: cols,
-        columnGap: 20,
-        width: "100%",
-      }}
-    >
-      {items.map((p) => (
-        <PicCard key={p.id} pic={p} />
+    <div style={{ display: "flex", gap: 20, width: "100%", alignItems: "flex-start" }}>
+      {columns.map((col, ci) => (
+        <div key={ci} style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 20 }}>
+          {col.map((p) => <PicCard key={p.id} pic={p} />)}
+        </div>
       ))}
     </div>
   );
@@ -314,23 +312,15 @@ export default function PicPage() {
   };
 
   const filterPanel = (
-    <div
-      style={{
-        background: "rgba(255,255,255,0.92)",
-        borderRadius: 16,
-        boxShadow: "0 4px 24px rgba(104,96,123,0.10)",
-        backdropFilter: "blur(12px)",
-        padding: "22px 20px",
-      }}
-    >
+    <div>
       <div
         style={{
-          fontWeight: 800,
-          color: "rgb(104,96,123)",
-          marginBottom: 18,
+          fontWeight: 700,
+          color: "rgb(40,80,130)",
+          marginBottom: 10,
           fontFamily: "'Noto Serif SC', serif",
-          fontSize: "1.1rem",
-          letterSpacing: "0.08em",
+          fontSize: "0.9rem",
+          letterSpacing: "0.05em",
         }}
       >
         王梓钰图库
@@ -338,20 +328,20 @@ export default function PicPage() {
 
       <input
         type="text"
-        placeholder="搜索关键词..."
+        placeholder="搜索关键词"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         style={{
           width: "100%",
-          height: 36,
-          padding: "0 12px",
-          borderRadius: 20,
-          border: "1.5px solid rgba(104,96,123,0.2)",
-          background: "rgba(104,96,123,0.05)",
-          fontSize: "0.85rem",
-          color: "rgb(104,96,123)",
+          height: 28,
+          padding: "0 8px",
+          borderRadius: 4,
+          border: "1px solid rgba(140,190,220,0.55)",
+          background: "rgba(255,255,255,0.85)",
+          fontSize: "0.75rem",
+          color: "rgb(50,80,110)",
           outline: "none",
-          marginBottom: 20,
+          marginBottom: 12,
           boxSizing: "border-box",
         }}
       />
@@ -457,16 +447,22 @@ export default function PicPage() {
           alignItems: "flex-start",
         }}
       >
-        {/* 左侧筛选面板（桌面端）：固定宽度，不参与图片区域宽度计算 */}
+        {/* 左侧筛选面板（桌面端）：与 Museum 保持一致 */}
         {!isMobile && (
           <div
             style={{
-              width: 260,
+              width: 220,
               flexShrink: 0,
               position: "sticky",
               top: 62,
               maxHeight: "calc(100vh - 80px)",
               overflowY: "auto",
+              background: "rgba(255,255,255,0.88)",
+              border: "1px solid rgba(160,200,225,0.5)",
+              borderRadius: 10,
+              boxShadow: "0 2px 12px rgba(100,160,200,0.12)",
+              backdropFilter: "blur(8px)",
+              padding: "14px 14px",
             }}
           >
             {filterPanel}

@@ -224,7 +224,8 @@ export default function VideoPage() {
   // 记录每张卡片是否已渐入显示
   const [visibleSet, setVisibleSet] = useState<Set<string>>(() => {
     // 从缓存恢复时，所有已有卡片直接显示（不重复动画）
-    return new Set(saved.items.map((v) => v.id));
+    // 过滤掉 null/undefined 的 item，防止渲染崩溃
+    return new Set(saved.items.filter(Boolean).map((v) => v.id).filter(Boolean));
   });
 
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -233,9 +234,11 @@ export default function VideoPage() {
   const finishedRef = useRef(saved.finished);
   const loadingRef = useRef(false);
   const isRestoredRef = useRef(videoStore.hasData());
+  // 初始列数：用 window.innerWidth 提前估算（减去左侧面板220px + gap14px），避免初始渲染闪变2列
+  const estimateCols = () => Math.max(2, Math.floor((window.innerWidth - 234 - 32) / 310));
   // 列数 state（触发重渲染）和 ref（首屏加载用）
-  const [cols, setCols] = useState(2);
-  const colsRef = useRef(2);
+  const [cols, setCols] = useState(estimateCols);
+  const colsRef = useRef(estimateCols());
 
   // 计算当前网格列数：每列350px+20px间距=370px，与yinlin.wiki一致
   const calcCols = useCallback(() => {
