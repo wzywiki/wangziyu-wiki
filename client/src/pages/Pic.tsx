@@ -479,7 +479,6 @@ export default function PicPage() {
 
       <div
         style={{
-          maxWidth: 1100,
           margin: "0 auto",
           padding: isMobile ? "62px 10px 40px" : "62px 16px 40px",
           display: "flex",
