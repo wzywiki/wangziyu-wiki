@@ -241,7 +241,7 @@ export default function VideoPage() {
   const calcCols = useCallback(() => {
     if (gridRef.current) {
       const w = gridRef.current.offsetWidth;
-      const c = Math.max(2, Math.floor(w / 370));
+      const c = Math.max(2, Math.floor(w / 310));
       colsRef.current = c;
       setCols(c);
       return c;
