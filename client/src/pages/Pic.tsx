@@ -28,39 +28,38 @@ function FilterGroup({
   onToggle: (v: string) => void;
 }) {
   return (
-    <div style={{ marginBottom: 12 }}>
+    <div style={{ marginBottom: 18 }}>
       <div
         style={{
-          fontSize: "0.72rem",
-          color: "rgb(80,120,170)",
-          marginBottom: 5,
-          fontWeight: 600,
-          letterSpacing: "0.04em",
+          fontSize: "0.78rem",
+          color: "rgb(104,96,123)",
+          marginBottom: 8,
+          fontWeight: 700,
+          letterSpacing: "0.06em",
+          textTransform: "uppercase" as const,
         }}
       >
         {label}
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {items.map((item) => (
           <button
             key={item}
             onClick={() => onToggle(item)}
             style={{
-              padding: "2px 8px",
-              borderRadius: 3,
-              fontSize: "0.72rem",
+              padding: "4px 12px",
+              borderRadius: 20,
+              fontSize: "0.82rem",
               cursor: "pointer",
-              border: selected.includes(item)
-                ? "1px solid rgba(80,150,200,0.6)"
-                : "1px solid rgba(160,200,225,0.4)",
+              border: "none",
               background: selected.includes(item)
-                ? "rgba(100,170,210,0.28)"
-                : "rgba(255,255,255,0.5)",
+                ? "rgb(104,96,123)"
+                : "rgba(104,96,123,0.1)",
               color: selected.includes(item)
-                ? "rgb(30,70,130)"
-                : "rgb(70,110,160)",
+                ? "#fff"
+                : "rgb(104,96,123)",
               fontWeight: selected.includes(item) ? 700 : 400,
-              transition: "all 0.15s",
+              transition: "all 0.18s",
             }}
           >
             {item}
@@ -317,22 +316,21 @@ export default function PicPage() {
   const filterPanel = (
     <div
       style={{
-        background: "rgba(255,255,255,0.88)",
-        border: "1px solid rgba(160,200,225,0.5)",
-        borderRadius: 10,
-        boxShadow: "0 2px 12px rgba(100,160,200,0.12)",
-        backdropFilter: "blur(8px)",
-        padding: "14px 14px",
+        background: "rgba(255,255,255,0.92)",
+        borderRadius: 16,
+        boxShadow: "0 4px 24px rgba(104,96,123,0.10)",
+        backdropFilter: "blur(12px)",
+        padding: "22px 20px",
       }}
     >
       <div
         style={{
-          fontWeight: 700,
-          color: "rgb(40,80,130)",
-          marginBottom: 12,
+          fontWeight: 800,
+          color: "rgb(104,96,123)",
+          marginBottom: 18,
           fontFamily: "'Noto Serif SC', serif",
-          fontSize: "0.9rem",
-          letterSpacing: "0.05em",
+          fontSize: "1.1rem",
+          letterSpacing: "0.08em",
         }}
       >
         王梓钰图库
@@ -340,20 +338,20 @@ export default function PicPage() {
 
       <input
         type="text"
-        placeholder="关键词"
+        placeholder="搜索关键词..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         style={{
           width: "100%",
-          height: 28,
-          padding: "0 8px",
-          borderRadius: 4,
-          border: "1px solid rgba(140,190,220,0.55)",
-          background: "rgba(255,255,255,0.85)",
-          fontSize: "0.78rem",
-          color: "rgb(50,80,110)",
+          height: 36,
+          padding: "0 12px",
+          borderRadius: 20,
+          border: "1.5px solid rgba(104,96,123,0.2)",
+          background: "rgba(104,96,123,0.05)",
+          fontSize: "0.85rem",
+          color: "rgb(104,96,123)",
           outline: "none",
-          marginBottom: 12,
+          marginBottom: 20,
           boxSizing: "border-box",
         }}
       />
@@ -463,7 +461,7 @@ export default function PicPage() {
         {!isMobile && (
           <div
             style={{
-              width: 200,
+              width: 260,
               flexShrink: 0,
               position: "sticky",
               top: 62,
