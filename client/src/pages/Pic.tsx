@@ -1,8 +1,8 @@
 /**
  * Pic — 王梓钰图库页
  * 布局：左侧筛选面板 + 右侧瀑布流（小红书风格）
- * 图片宽度固定，高度按原始比例自适应，下方文案
- * 使用 JS 分列法确保绝对等宽瀑布流
+ * 使用 CSS columns 实现响应式瀑布流，无需 JS 计算列宽
+ * 响应式：桌面4列 → 中等3列 → 小屏2列 → 移动端2列
  */
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "wouter";
@@ -83,6 +83,11 @@ function PicCard({ pic: p }: { pic: PicSet }) {
           cursor: "pointer",
           transition: "all 0.2s ease",
           boxShadow: "0 1px 6px rgba(100,150,200,0.08)",
+          // 关键：防止卡片被分列截断
+          breakInside: "avoid",
+          pageBreakInside: "avoid",
+          WebkitColumnBreakInside: "avoid",
+          marginBottom: 10,
         }}
         onMouseEnter={(e) => {
           const el = e.currentTarget as HTMLDivElement;
@@ -166,41 +171,21 @@ function PicCard({ pic: p }: { pic: PicSet }) {
 }
 
 /**
- * 瀑布流容器：使用 JS 分列法
- * 将 items 按列索引分配到 cols 个列数组，每列独立渲染
- * 这样每列宽度完全由 flex 布局保证，绝对等宽
+ * 瀑布流容器：使用 CSS columns 多列布局
+ * 优点：纯CSS实现，无需JS计算，列宽绝对均等，响应式自动适配
+ * 通过 column-count 控制列数，column-gap 控制间距
  */
 function MasonryGrid({ items, cols }: { items: PicSet[]; cols: number }) {
-  // 将 items 分配到 cols 列（按顺序轮流分配）
-  const columns: PicSet[][] = Array.from({ length: cols }, () => []);
-  items.forEach((item, i) => {
-    columns[i % cols].push(item);
-  });
-
   return (
     <div
       style={{
-        display: "flex",
-        gap: 10,
-        alignItems: "flex-start",
+        columnCount: cols,
+        columnGap: 10,
         width: "100%",
       }}
     >
-      {columns.map((col, colIdx) => (
-        <div
-          key={colIdx}
-          style={{
-            flex: "1 1 0",
-            minWidth: 0,
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-          }}
-        >
-          {col.map((p) => (
-            <PicCard key={p.id} pic={p} />
-          ))}
-        </div>
+      {items.map((p) => (
+        <PicCard key={p.id} pic={p} />
       ))}
     </div>
   );
@@ -220,11 +205,31 @@ export default function PicPage() {
   const [tagFilter, setTagFilter] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
+  const [cols, setCols] = useState(4);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef(saved.page);
   const finishedRef = useRef(saved.finished);
   const loadingRef = useRef(false);
   const isRestoredRef = useRef(picStore.hasData());
+
+  // 根据容器宽度计算列数
+  const calcCols = useCallback(() => {
+    if (gridRef.current) {
+      const w = gridRef.current.offsetWidth;
+      if (w < 400) setCols(2);
+      else if (w < 600) setCols(2);
+      else if (w < 800) setCols(3);
+      else setCols(4);
+    }
+  }, []);
+
+  useEffect(() => {
+    calcCols();
+    const ro = new ResizeObserver(() => calcCols());
+    if (gridRef.current) ro.observe(gridRef.current);
+    return () => ro.disconnect();
+  }, [calcCols]);
 
   // 恢复滚动位置
   useEffect(() => {
@@ -501,7 +506,7 @@ export default function PicPage() {
         )}
 
         {/* 右侧瀑布流：flex:1 撑满剩余空间 */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div ref={gridRef} style={{ flex: 1, minWidth: 0 }}>
           {items.length === 0 && !loading ? (
             <div
               style={{
@@ -517,7 +522,7 @@ export default function PicPage() {
               暂无图库内容
             </div>
           ) : (
-            <MasonryGrid items={items} cols={isMobile ? 2 : 4} />
+            <MasonryGrid items={items} cols={cols} />
           )}
 
           <div
