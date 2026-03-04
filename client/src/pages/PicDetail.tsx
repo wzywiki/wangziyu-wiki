@@ -259,40 +259,36 @@ export default function PicDetail() {
             </div>
           </div>
 
-          {/* 右侧图片网格 */}
+          {/* 右侧图片网格：大图展示，3列，原始比例不裁剪，参考yinlin.wiki */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-              gap: 8,
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 12,
             }}>
               {picUrls.map((url, i) => (
                 <div
                   key={i}
                   onClick={() => setLightboxIdx(i)}
                   style={{
-                    cursor: 'pointer', borderRadius: 8, overflow: 'hidden',
-                    aspectRatio: '1', background: 'rgba(180,215,235,0.25)',
-                    border: '1px solid rgba(160,200,225,0.35)',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    cursor: 'pointer',
+                    borderRadius: '1rem',
+                    overflow: 'hidden',
+                    transition: 'opacity 0.2s',
                   }}
                   onMouseEnter={e => {
-                    (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.02)';
-                    (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 16px rgba(100,160,200,0.25)';
+                    (e.currentTarget as HTMLDivElement).style.opacity = '0.88';
                   }}
                   onMouseLeave={e => {
-                    (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)';
-                    (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
+                    (e.currentTarget as HTMLDivElement).style.opacity = '1';
                   }}
                 >
                   <img
                     src={url}
                     alt={`${pic.name} ${i + 1}`}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '1rem' }}
                     onError={e => {
-                      const el = e.currentTarget as HTMLImageElement;
-                      el.style.background = 'linear-gradient(135deg, rgba(180,215,235,0.6) 0%, rgba(160,200,225,0.4) 100%)';
-                      el.removeAttribute('src');
+                      (e.currentTarget as HTMLImageElement).style.display = 'none';
                     }}
                   />
                 </div>
