@@ -76,62 +76,46 @@ function PicCard({ pic: p }: { pic: PicSet }) {
     <Link href={`/picDetail?id=${p.id}`} style={{ display: "block" }}>
       <div
         style={{
-          background: "rgba(255,255,255,0.88)",
-          border: "1px solid rgba(160,200,225,0.3)",
-          borderRadius: 12,
-          overflow: "hidden",
           cursor: "pointer",
-          transition: "all 0.2s ease",
-          boxShadow: "0 1px 6px rgba(100,150,200,0.08)",
-          // 关键：防止卡片被分列截断
+          // 防止卡片被分列截断
           breakInside: "avoid",
           pageBreakInside: "avoid",
           WebkitColumnBreakInside: "avoid",
-          marginBottom: 10,
-        }}
-        onMouseEnter={(e) => {
-          const el = e.currentTarget as HTMLDivElement;
-          el.style.boxShadow = "0 6px 20px rgba(80,130,180,0.22)";
-          el.style.transform = "translateY(-2px)";
-        }}
-        onMouseLeave={(e) => {
-          const el = e.currentTarget as HTMLDivElement;
-          el.style.boxShadow = "0 1px 6px rgba(100,150,200,0.08)";
-          el.style.transform = "translateY(0)";
+          marginBottom: 20,
         }}
       >
-        {/* 图片区域：宽度100%，高度按原始比例自适应 */}
-        <div style={{ width: "100%", overflow: "hidden", background: "rgba(210,228,242,0.3)" }}>
-          <img
-            src={p.cover_url}
-            alt={p.name}
-            style={{
-              width: "100%",
-              height: "auto",
-              display: "block",
-              transition: "transform 0.35s ease",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLImageElement).style.transform = "scale(1.04)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLImageElement).style.transform = "scale(1)";
-            }}
-            onError={(e) => {
-              const el = e.currentTarget as HTMLImageElement;
-              el.style.display = "none";
-            }}
-          />
-        </div>
-        {/* 卡片底部文案 */}
-        <div style={{ padding: "8px 10px 10px" }}>
+        {/* 图片：大圆角，宽度100%自适应，参考yinlin.wiki的 border-radius:1rem */}
+        <img
+          src={p.cover_url}
+          alt={p.name}
+          style={{
+            width: "100%",
+            height: "auto",
+            display: "block",
+            borderRadius: "1rem",
+            objectFit: "contain",
+            transition: "opacity 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLImageElement).style.opacity = "0.88";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLImageElement).style.opacity = "1";
+          }}
+          onError={(e) => {
+            const el = e.currentTarget as HTMLImageElement;
+            el.style.display = "none";
+          }}
+        />
+        {/* 卡片底部文案：参考yinlin.wiki padding:0.5rem 1rem，颜色rgb(104,96,123) */}
+        <div style={{ padding: "0.5rem 0.5rem 0" }}>
           <div
             style={{
-              fontSize: "0.82rem",
-              fontWeight: 600,
-              color: "rgb(30,55,95)",
+              fontSize: "1rem",
+              fontWeight: 700,
+              color: "rgb(104,96,123)",
               lineHeight: 1.4,
-              marginBottom: 5,
+              marginBottom: 2,
               overflow: "hidden",
               display: "-webkit-box",
               WebkitLineClamp: 2,
@@ -145,24 +129,12 @@ function PicCard({ pic: p }: { pic: PicSet }) {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              fontSize: "0.8rem",
+              color: "rgb(104,96,123)",
             }}
           >
-            <span
-              style={{
-                fontSize: "0.65rem",
-                padding: "1px 6px",
-                borderRadius: 4,
-                background: "rgba(130,185,220,0.18)",
-                color: "rgb(50,95,150)",
-                border: "1px solid rgba(110,165,210,0.28)",
-                fontWeight: 500,
-              }}
-            >
-              {p.type}
-            </span>
-            <span style={{ fontSize: "0.65rem", color: "rgb(140,165,190)" }}>
-              {formatDate(p.date)}
-            </span>
+            <span>{p.type}</span>
+            <span>{formatDate(p.date)}</span>
           </div>
         </div>
       </div>
@@ -180,7 +152,7 @@ function MasonryGrid({ items, cols }: { items: PicSet[]; cols: number }) {
     <div
       style={{
         columnCount: cols,
-        columnGap: 10,
+        columnGap: 20,
         width: "100%",
       }}
     >
